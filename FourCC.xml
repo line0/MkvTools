@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FourCCs>
+    <FourCC>
+        <code>GREY</code>
+        <name>Y8</name>
+        <desc>Y plane/Greyscale</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>HDYC</code>
+        <name>UYVY</name>
+        <desc>4:2:2 interleaved YUV (BT.709)</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>I420</code>
+        <name>I420</name>
+        <desc>4:2:0 planar YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>I422</code>
+        <name>I422</name>
+        <desc>4:2:2 planar YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>I444</code>
+        <name>I444</name>
+        <desc>4:4:4 planar YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>NV12</code>
+        <name>NV12</name>
+        <desc>4:2:0 semi-planar YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>UYVY</code>
+        <name>UYVY</name>
+        <desc>4:2:2 interleaved YUV (BT.601)</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>V210</code>
+        <name>V210</name>
+        <desc>4:2:2 10-bit YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>V416</code>
+        <name>RGB24</name>
+        <desc>24-bit RGB888</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>XVID</code>
+        <name>XviD</name>
+        <desc>XviD MPEG-4 Part 2 (ASP)</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>V422</code>
+        <name>YUY2</name>
+        <desc>4:2:2 interleaved YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>WVC1</code>
+        <name>VC-1</name>
+        <desc>VC-1/WMV 9 Advanced Profile</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>Y8  </code>
+        <name>Y8</name>
+        <desc>Y plane/Greyscale</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>Y800</code>
+        <name>Y8</name>
+        <desc>Y plane/Greyscale</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>YUY2</code>
+        <name>YUY2</name>
+        <desc>4:2:2 interleaved YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>YV12</code>
+        <name>YV12</name>
+        <desc>4:2:0 planar YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>YV16</code>
+        <name>YV16</name>
+        <desc>4:2:2 planar YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>YV24</code>
+        <name>YV24</name>
+        <desc>4:4:4 planar YUV</desc>
+    </FourCC>
+
+    <FourCC>
+        <code>YVU9</code>
+        <name>YVU9</name>
+        <desc>4:1:0 planar YUV</desc>
+    </FourCC>
+</FourCCs>

@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?>
+<codecs>
+    <codec>
+        <id>A_AAC</id>
+        <name>AAC</name>
+        <desc>Advanced Audio Coding</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG2/MAIN</id>
+        <name>AAC Main</name>
+        <desc>AAC MPEG-2 Main Profile</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG2/LC</id>
+        <name>AAC LC</name>
+        <desc>AAC MPEG-2 Low Complexity</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG2/LC/SBR</id>
+        <name>AAC LC+SBR</name>
+        <desc>AAC MPEG-2 Low Complexity with SBR</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG2/SSR</id>
+        <name>AAC SSR</name>
+        <desc>AAC MPEG-2 Scalable Sampling Rate</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG4/MAIN</id>
+        <name>AAC Main</name>
+        <desc>AAC MPEG-4 Main Profile</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG4/LC</id>
+        <name>AAC LC</name>
+        <desc>AAC Low Complexity</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG4/LC/SBR</id>
+        <name>AAC LC+SBR</name>
+        <desc>AAC Low Complexity with Spectral Band Replication</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG4/SSR</id>
+        <name>AAC SSR</name>
+        <desc>AAC Scalable Sampling Rate</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AAC/MPEG4/LTP</id>
+        <name>AAC SSR</name>
+        <desc>AAC Long Term Prediction</desc>
+        <ext>aac</ext>
+    </codec>
+
+    <codec>
+        <id>A_AC3</id>
+        <name>AC3</name>
+        <desc>Dolby Digital</desc>
+        <ext>ac3</ext>
+    </codec>
+
+    <codec>
+        <id>A_AC3/BSID10</id>
+        <name>AC3</name>
+        <desc>Dolby Digital (8-12kHz)</desc>
+        <ext>ac3</ext>
+    </codec>
+
+    <codec>
+        <id>A_AC3/BSID9</id>
+        <name>AC3</name>
+        <desc>Dolby Digital (16-24kHz)</desc>
+        <ext>ac3</ext>
+    </codec>
+
+    <codec>
+        <id>A_MS/ACM</id>
+        <name>ACM</name>
+        <desc>Microsoft Audio Codec Manager</desc>
+    </codec>
+
+    <codec>
+        <id>A_ALAC</id>
+        <name>ALAC</name>
+        <desc>Apple Lossless Audio Codec</desc>
+        <ext>alac</ext>
+    </codec>
+
+    <codec>
+        <id>A_DTS</id>
+        <name>DTS</name>
+        <desc>Digital Theatre System (DTS/DTS-ES/DTS-HDMA/DTS-HRA)</desc>
+        <ext>dts</ext>
+    </codec>
+
+    <codec>
+        <id>A_DTS/EXPRESS</id>
+        <name>DTS Express</name>
+        <desc>Digital Theatre System (DTS Express)</desc>
+        <ext>dts</ext>
+    </codec>
+
+    <codec>
+        <id>A_DTS/LOSSLES</id>
+        <name>DTS Lossless</name>
+        <desc>Digital Theatre System (DTS Lossless)</desc>
+        <ext>dts</ext>
+    </codec>
+
+    <codec>
+        <id>A_EAC3</id>
+        <name>E-AC3</name>
+        <desc>Dolby Digital Plus</desc>
+        <ext>eac3</ext>
+    </codec>
+
+    <codec>
+        <id>A_FLAC</id>
+        <name>FLAC</name>
+        <desc>Free Lossless Audio Codec</desc>
+        <ext>flac</ext>
+    </codec>
+
+    <codec>
+        <id>A_MLP</id>
+        <name>MLP</name>
+        <desc>Meridian Lossless Packing</desc>
+        <ext>mlp</ext>
+    </codec>
+
+    <codec>
+        <id>A_MPC</id>
+        <name>Musepack</name>
+        <desc>Musepack</desc>
+        <ext>mpc</ext>
+    </codec>
+
+    <codec>
+        <id>A_MPEG/L1</id>
+        <name>MP1</name>
+        <desc>MPEG Audio 1/2 Layer I</desc>
+        <ext>mp1</ext>
+    </codec>
+
+    <codec>
+        <id>A_MPEG/L2</id>
+        <name>MP2</name>
+        <desc>MPEG Audio 1/2 Layer II</desc>
+        <ext>mp2</ext>
+    </codec>
+
+    <codec>
+        <id>A_MPEG/L3</id>
+        <name>MP3</name>
+        <desc>MPEG Audio 1/2 Layer III</desc>
+        <ext>mp3</ext>
+    </codec>
+
+    <codec>
+        <id>A_OPUS</id>
+        <name>Opus</name>
+        <desc>Opus Audio Codec</desc>
+        <ext>opus</ext>
+    </codec>
+
+    <codec>
+        <id>A_PCM/INT/BIG</id>
+        <name>PCM BE</name>
+        <desc>PCM Int, Big Endian</desc>
+        <ext>pcm</ext>
+    </codec>
+
+    <codec>
+        <id>A_PCM/INT/LIT</id>
+        <name>PCM LE</name>
+        <desc>PCM Int, Little Endian</desc>
+        <ext>pcm</ext>
+    </codec>
+
+    <codec>
+        <id>A_PCM/FLOAT/IEEE</id>
+        <name>PCM FP</name>
+        <desc>PCM Floating Point, IEEE compatible</desc>
+        <ext>pcm</ext>
+    </codec>
+
+    <codec>
+        <id>A_QUICKTIME</id>
+        <name>Quicktime</name>
+        <desc>Apple Quicktime Audio</desc>
+        <ext>UNKNOWN</ext>
+    </codec>
+
+    <codec>
+        <id>A_QUICKTIME/QDMC</id>
+        <name>QDesign</name>
+        <desc>QDesign Music</desc>
+        <ext>UNKNOWN</ext>
+    </codec>
+
+    <codec>
+        <id>A_QUICKTIME/QDM2</id>
+        <name>QDesign</name>
+        <desc>QDesign Music v2</desc>
+        <ext>UNKNOWN</ext>
+    </codec>
+
+    <codec>
+        <id>A_REAL/14_4</id>
+        <name>RA1</name>
+        <desc>RealAudio 1 (IS-54 VSELP)</desc>
+        <ext>ra</ext>
+    </codec>
+
+    <codec>
+        <id>A_REAL/28_8</id>
+        <name>RA2</name>
+        <desc>RealAudio 2 (G.728 LD-CELP)</desc>
+        <ext>ra</ext>
+    </codec>
+
+    <codec>
+        <id>A_REAL/ATRC</id>
+        <name>ATRAC3</name>
+        <desc>Sony ATRAC3 (RA8)</desc>
+        <ext>ra</ext>
+    </codec>
+
+    <codec>
+        <id>A_REAL/COOK</id>
+        <name>Cook</name>
+        <desc>RealAudio Cook Codec (RA4/5)</desc>
+        <ext>ra</ext>
+    </codec>
+
+    <codec>
+        <id>A_REAL/SIPR</id>
+        <name>Sipro</name>
+        <desc>Sipro Lab Telecom ACELP-NET Voice Codec</desc>
+        <ext>ra</ext>
+    </codec>
+
+    <codec>
+        <id>A_REAL/RALF</id>
+        <name>Real LL</name>
+        <desc>Real Audio Lossless Format</desc>
+        <ext>ra</ext>
+    </codec>
+
+    <codec>
+        <id>A_TTA1</id>
+        <name>TTA</name>
+        <desc>The True Audio lossless audio</desc>
+        <ext>tta</ext>
+    </codec>
+
+    <codec>
+        <id>A_TRUEHD</id>
+        <name>TrueHD</name>
+        <desc>Dolby TrueHD lossless audio</desc>
+        <ext>thd</ext>
+    </codec>
+
+    <codec>
+        <id>A_VORBIS</id>
+        <name>Vorbis</name>
+        <ext>ogg</ext>
+    </codec>
+
+    <codec>
+        <id>A_WAVPACK4</id>
+        <name>WavPack</name>
+        <desc>WavPack lossless audio</desc>
+        <ext>wv</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG1</id>
+        <name>MPEG-1</name>
+        <desc>MPEG-1 video</desc>
+        <ext>mpg</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG2</id>
+        <name>MPEG-2</name>
+        <desc>MPEG-2 video</desc>
+        <ext>mpg</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG4/ISO</id>
+        <name>MPEG-4 ISO</name>
+        <desc>MPEG-4 Part 2 ISO</desc>
+        <ext>avi</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG4/ISO/SP</id>
+        <name>MPEG-4 SP</name>
+        <desc>MPEG-4 Part 2 Simple Profile</desc>
+        <ext>avi</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG4/ISO/ASP</id>
+        <name>MPEG-4 ASP</name>
+        <desc>MPEG-4 Part 2 Advanced Simple Profile</desc>
+        <ext>avi</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG4/ISO/AP</id>
+        <name>MPEG-4 AP</name>
+        <desc>MPEG-4 Part 2 Advanced Profile</desc>
+        <ext>avi</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG4/ISO/AVC</id>
+        <name>H.264/AVC</name>
+        <desc>MPEG-4 Part 10 Advanced Video Coding</desc>
+        <ext>h264</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEGH/ISO/HEVC</id>
+        <name>H.265/HEVC</name>
+        <desc>MPEG-H Part 2 High Efficiency Video Coding</desc>
+        <ext>hevc</ext>
+    </codec>
+
+    <codec>
+        <id>V_MPEG4/MS/V3</id>
+        <name>DivX3</name>
+        <desc>MS MPEG-4 V3 VfW / DivX3</desc>
+        <ext>avi</ext>
+    </codec>
+
+    <codec>
+        <id>V_PRORES</id>
+        <name>ProRes</name>
+        <desc>Apple ProRes 422/444</desc>
+        <ext>mov</ext>
+    </codec>
+
+    <codec>
+        <id>V_THEORA</id>
+        <name>Theora</name>
+        <desc>Theora</desc>
+        <ext>ogv</ext>
+    </codec>
+
+    <codec>
+        <id>V_UNCOMPRESSED</id>
+        <name>RAW</name>
+        <desc>Uncompressed video</desc>
+        <ext>UNKNOWN</ext>
+    </codec>
+
+    <codec>
+        <id>V_MS/VFW/FOURCC</id>
+        <name>VFW</name>
+        <desc>Microsoft Video Codec Manager / Video for Windows</desc>
+        <ext>avi</ext>
+    </codec>
+
+    <codec>
+        <id>S_TEXT/ASS</id>
+        <name>ASS</name>
+        <desc>Advanced SubStation (SSA v4+)</desc>
+        <ext>ass</ext>
+    </codec>
+
+    <codec>
+        <id>S_TEXT/SSA</id>
+        <name>ASS</name>
+        <desc>SubStation Alpha v4</desc>
+        <ext>ssa</ext>
+    </codec>
+
+    <codec>
+        <id>S_TEXT/UTF-8</id>
+        <name>SRT</name>
+        <desc>SubRip Text (UTF-8)</desc>
+        <ext>srt</ext>
+    </codec>
+
+    <codec>
+        <id>S_TEXT/USF</id>
+        <name>USF</name>
+        <desc>Universal Subtitle Format</desc>
+        <ext>usf</ext>
+    </codec>
+
+    <codec>
+        <id>S_IMAGE/BMP</id>
+        <name>Bitmap</name>
+        <desc>Basic Image subtitles</desc>
+        <ext>bmp</ext>
+    </codec>
+
+    <codec>
+        <id>S_VOBSUB</id>
+        <name>VobSub</name>
+        <desc>VobSub DVD Image subtitles</desc>
+        <ext>bmp</ext>
+    </codec>
+
+    <codec>
+        <id>S_KATE</id>
+        <name>Kate</name>
+        <desc>Karaoke And Text Encapsulation</desc>
+        <ext>kate</ext>
+    </codec>
+</codecs>
+
