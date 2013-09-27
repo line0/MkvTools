@@ -251,7 +251,7 @@ filter Format-MkvInfo-Table([string]$type="video")
 
     $tblAtt=@(
     @{label="EX"; Expression={ $color.Highlight($_._toExtract,"X") }; Width=2; Order=0},
-    @{label="UID"; Expression={ $_.UID }; Width=10; Order=1 },
+    @{label="UID"; Expression={ $_.UID }; Width=20; Order=1 },
     @{label="Mime Type"; Expression={$_.MimeType}; Width=30; Order=2},
     @{label="Name"; Expression={$_.Name}; Width=40; Order=3}
     )
