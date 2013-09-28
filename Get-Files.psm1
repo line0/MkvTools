@@ -41,8 +41,8 @@ $inFilesAll = @()
             { Write-Host "Notice: No $matchDesc files found in $input." -ForegroundColor Gray}
             else 
             { 
-                Write-Host "Error: $input is not a $matchDesc file."
-                exit
+                throw "Error: $input is not a $matchDesc file."
+                
             }
         }
         
