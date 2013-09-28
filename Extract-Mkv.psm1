@@ -24,6 +24,9 @@ param
 [Parameter(Mandatory=$false, HelpMessage='Filename pattern for extracted attachments.')]
 [alias("ap")]
 [string]$AttachmentPattern = '$f_Attachments\$n',
+[Parameter(Mandatory=$false, HelpMessage='Filename pattern for extracted chapters.')]
+[alias("cp")]
+[string]$ChapterPattern = '$f_Chapters',
 [Parameter(Mandatory=$false, HelpMessage='Output directory. Defaults to parent directory of the inputs')]
 [alias("o")]
 [string]$OutDir,
@@ -98,8 +101,10 @@ param
                                      "fullraw"  = $FullRaw 
                                    }
 
-        $mkvInfo = ExtractTracks -MkvInfo $mkvInfo -Pattern $trackPattern -OutDir $outdir -flags $trackFlags
-        $mkvInfo = ExtractAttachments -MkvInfo $mkvInfo -pattern $attachmentPattern -OutDir $outdir -flags $cmnFlags
+        $mkvInfo = ExtractTracks -MkvInfo $mkvInfo -Pattern $trackPattern -OutDir $OutDir -flags $trackFlags
+        $mkvInfo = ExtractAttachments -MkvInfo $mkvInfo -pattern $attachmentPattern -OutDir $OutDir -flags $cmnFlags
+
+        if($Chapters) { $mkvInfo = ExtractChapters -MkvInfo $mkvInfo -Pattern $ChapterPattern -OutDir $OutDir -quiet $Quiet -type $Chapters }
         
     }
 }
@@ -129,7 +134,7 @@ function ExtractTracks([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$outDi
 
     if($extCnt -gt 0)
     {
-        &mkvextract --ui-language en tracks $mkvInfo.Path $extArgs `        ($flags.GetEnumerator()| ?{$_.Value -eq $true -and $_.Key -ne "quiet"} | %{"--$($_.Key)"}) `        | Tee-Object -Variable dbgLog | %{             if($_ -match '(?:Progress: )([0-9]{1,2})(?:%)')            {                $extPercent = $matches[1]                Write-Progress -Activity $mkvInfo.Path -Status "Extracting $extCnt tracks..." -PercentComplete $extPercent -CurrentOperation "$extPercent% complete"            }            elseif($_ -match 'Error: .*')            {                Write-HostEx $matches[0] -ForegroundColor Red -If (!$flags.quiet)                $mkvInfo.Tracks = $mkvInfo.Tracks | Select-Object * -ExcludeProperty _ExtractPath            }            elseif($_ -match '(?:Progress: )(100)(?:%)')            {                $extPercent = $matches[1]                Write-Progress -Activity $mkvInfo.Path -Status "Extraction complete." -Complete                $mkvInfo.Tracks = $mkvInfo.Tracks | Select-Object * -ExcludeProperty _toExtract                Write-HostEx "`nDone.`n" -ForegroundColor Green -If (!$flags.quiet)            }            elseif($_ -match '^\(mkvextract\)')            {                Write-Verbose $_            }            elseif($_.Trim() -and (!$flags.quiet))            { Write-HostEx $_ -ForegroundColor Gray -If (!$flags.quiet) }           }
+        &mkvextract --ui-language en tracks $mkvInfo.Path $extArgs `        ($flags.GetEnumerator()| ?{$_.Value -eq $true -and $_.Key -ne "quiet"} | %{"--$($_.Key)"}) `        | Tee-Object -Variable dbgLog | %{             if($_ -match '(?:Progress: )([0-9]{1,2})(?:%)')            {                $extPercent = $matches[1]                Write-Progress -Activity $mkvInfo.Path -Status "Extracting $extCnt tracks..." -PercentComplete $extPercent -CurrentOperation "$extPercent% complete"            }            elseif($_ -match 'Error: .*')            {                Write-HostEx $matches[0] -ForegroundColor Red -If (!$flags.quiet)                $mkvInfo.Tracks = $mkvInfo.Tracks | Select-Object * -ExcludeProperty _ExtractPath            }            elseif($_ -match '(?:Progress: )(100)(?:%)')            {                $extPercent = $matches[1]                Write-Progress -Activity $mkvInfo.Path -Status "Extraction complete." -Complete                $mkvInfo.Tracks = $mkvInfo.Tracks | Select-Object * -ExcludeProperty _toExtract                Write-HostEx "Done.`n" -ForegroundColor Green -If (!$flags.quiet)            }            elseif($_ -match '^\(mkvextract\)')            {                Write-Verbose $_            }            elseif($_.Trim() -and (!$flags.quiet))            { Write-HostEx $_ -ForegroundColor Gray -If (!$flags.quiet) }           }
     } else { Write-Verbose "No tracks to extract" }
     return $mkvInfo
 }
@@ -157,12 +162,33 @@ function ExtractAttachments([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$
 
     if($extCnt -gt 0)
     {
-        &mkvextract --ui-language en attachments $mkvInfo.Path $extArgs `        ($flags.GetEnumerator()| ?{$_.Value -eq $true -and $_.Key -ne "quiet"} | %{"--$($_.Key)"}) `        | Tee-Object -Variable dbgLog | %{ $doneCnt=0 } {            if($_ -match "^The attachment (#[0-9]+), ID ([0-9]+), MIME type (.*?), size ([0-9]+), is written to '(.*?) '\.$")            {                $doneCnt++                $extPercent = ($doneCnt / $extCnt) * 100                Write-Progress -Activity $mkvInfo.Path -Status "Extracting $extCnt attachments..." -PercentComplete $extPercent -CurrentOperation ($matches[5] | Split-Path -Leaf)                $mkvInfo.Attachments = $mkvInfo.Attachments | ?{$_.UID -eq [uint64]$matches[2]}| Select-Object * -ExcludeProperty _toExtract            }            elseif($_ -match 'Error: .*')            {                Write-HostEx $matches[0] -ForegroundColor Red -If (!$flags.quiet)                $mkvInfo.Tracks = $mkvInfo.Tracks | Select-Object * -ExcludeProperty _ExtractPath                $err = $true            }            elseif($_ -match '^\(mkvextract\)')            {                Write-Verbose $_            }            elseif($_.Trim() -and (!$flags.quiet))            { Write-HostEx $_ -ForegroundColor Gray -If (!$flags.quiet) }         }
+        &mkvextract --ui-language en attachments $mkvInfo.Path $extArgs `        ($flags.GetEnumerator()| ?{$_.Value -eq $true -and $_.Key -ne "quiet"} | %{"--$($_.Key)"}) `        | Tee-Object -Variable dbgLog | %{ $doneCnt=0 } {            if($_ -match "^The attachment (#[0-9]+), ID ([0-9]+), MIME type (.*?), size ([0-9]+), is written to '(.*?) '\.$")            {                $doneCnt++                $extPercent = ($doneCnt / $extCnt) * 100                Write-Progress -Activity $mkvInfo.Path -Status "Extracting $extCnt attachments..." -PercentComplete $extPercent -CurrentOperation ($matches[5] | Split-Path -Leaf)                $mkvInfo.Attachments = $mkvInfo.Attachments | ?{$_.UID -eq [uint64]$matches[2]}| Select-Object * -ExcludeProperty _toExtract            }            elseif($_ -match 'Error: .*')            {                Write-HostEx $matches[0] -ForegroundColor Red -If (!$flags.quiet)                $mkvInfo.Tracks = $mkvInfo.Tracks | Select-Object * -ExcludeProperty _ExtractPath                $err = $true            }            elseif($_ -match '^\(mkvextract\)')            {                Write-Verbose $_            }            elseif($_.Trim())            { Write-HostEx $_ -ForegroundColor Gray -If (!$flags.quiet) }         }
 
-        Write-HostEx "`nDone.`n" -ForegroundColor Green -If (!$flags.quiet -and !$err)
+        Write-HostEx "Done.`n" -ForegroundColor Green -If (!$flags.quiet -and !$err)
 
     } else { Write-Verbose "No attachments to extract" }
-    return $mkvInfo   
+    return $mkvInfo
+}
+
+function ExtractChapters([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$outDir, [string]$type, [bool]$quiet)
+{
+    if (!$outDir) {$outDir = $mkvInfo.Path | Split-Path -Parent }
+    
+    $patternVars = @{
+    '$f' = [System.IO.Path]::GetFileNameWithoutExtension($mkvInfo.Path)
+    '$n' = [string]$mkvInfo.Title
+    }
+      
+    $patternVars.GetEnumerator() | ForEach-Object {$outFile=$pattern} { 
+        $outFile = $outFile -replace [regex]::escape($_.Key), $_.Value
+    }
+
+    if($type -eq "xml" -or $type -eq "simple")
+    {
+        $outFile = "$(Join-Path $outDir $outFile).$(if($type -eq "simple"){"txt"} else {"xml"})"
+        Write-HostEx "Extracting $type chapters into `'$outFile`'" -ForegroundColor Gray -If (!$quiet)
+        $out = &mkvextract --ui-language en chapters $mkvInfo.Path $(if($type -eq "simple") { "--simple" })            if ($out[0] -match "terminate called after throwing an instance")        {            Write-HostEx "Error: mkvextract terminated in an unusual way. Make sure the input file exists and is readable." -ForegroundColor Red -If (!$quiet)            $err = $true        }        elseif ($out[0] -match '\<\?xml version="[0-9].[0-9]"\?\>')        {            ([xml]$out).Save($outFile)        }        elseif ($out[0] -match 'CHAPTER[0-9]+=')        {             [string[]]$out = $out | ?{$_.Trim()}             Set-Content -LiteralPath $outFile -Encoding UTF8 $out        }        elseif($out.Trim())        { Write-HostEx $_ -ForegroundColor Gray -If (!$quiet) }        Write-HostEx "Done.`n" -ForegroundColor Green -If (!$quiet -and !$err)        } else {           Write-HostEx "Error: unsupported chapter type `"$type`"." -ForegroundColor Red -If (!$quiet)    }
+    return $mkvInfo
 }
 
 Export-ModuleMember Extract-Mkv
