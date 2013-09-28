@@ -14,7 +14,7 @@ param
 [string[]]$Attachments = @(),
 [Parameter(Mandatory=$false, HelpMessage='Extract chapters. Possible values: none (Default), xml, simple')]
 [alias("c")]
-[string]$Chapters,
+[string[]]$Chapters = @(),
 [Parameter(Mandatory=$false, HelpMessage='Extract v2 timecodes for video tracks. NOT IMPLEMENTED, YET.')]
 [alias("tc")]
 [switch]$Timecodes,
@@ -103,13 +103,12 @@ param
 
         $mkvInfo = ExtractTracks -MkvInfo $mkvInfo -Pattern $trackPattern -OutDir $OutDir -flags $trackFlags
         $mkvInfo = ExtractAttachments -MkvInfo $mkvInfo -pattern $attachmentPattern -OutDir $OutDir -flags $cmnFlags
-
-        if($Chapters) { $mkvInfo = ExtractChapters -MkvInfo $mkvInfo -Pattern $ChapterPattern -OutDir $OutDir -quiet $Quiet -type $Chapters }
+        $mkvInfo = ExtractChapters -MkvInfo $mkvInfo -Pattern $ChapterPattern -OutDir $OutDir -quiet $Quiet -types $Chapters
         
     }
 }
 
-function ExtractTracks([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$outDir, [hashtable]$flags)
+function ExtractTracks([PSCustomObject]$mkvInfo, [string]$pattern, [string]$outDir, [hashtable]$flags)
 {
     if (!$outdir) {$outdir = $mkvInfo.Path | Split-Path -Parent }
     $mkvInfo.Tracks | ?{$_._toExtract -eq $true -and $_.CodecExt} | %{$extArgs=@(); $extCnt=0} {
@@ -139,7 +138,7 @@ function ExtractTracks([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$outDi
     return $mkvInfo
 }
 
-function ExtractAttachments([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$outDir, [hashtable]$flags)
+function ExtractAttachments([PSCustomObject]$mkvInfo, [string]$pattern, [string]$outDir, [hashtable]$flags)
 {
     if (!$outdir) {$outdir = $mkvInfo.Path | Split-Path -Parent }
     $mkvInfo.Attachments | ?{$_._toExtract -eq $true} | %{$extArgs=@(); $extCnt=0} {
@@ -170,24 +169,25 @@ function ExtractAttachments([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$
     return $mkvInfo
 }
 
-function ExtractChapters([PSCustomObject]$mkvInfo, [regex]$pattern, [string]$outDir, [string]$type, [bool]$quiet)
+function ExtractChapters([PSCustomObject]$mkvInfo, [string]$pattern, [string]$outDir, [string[]]$types, [bool]$quiet)
 {
     if (!$outDir) {$outDir = $mkvInfo.Path | Split-Path -Parent }
+    $types | %{
     
-    $patternVars = @{
-    '$f' = [System.IO.Path]::GetFileNameWithoutExtension($mkvInfo.Path)
-    '$n' = [string]$mkvInfo.Title
-    }
+        $patternVars = @{
+        '$f' = [System.IO.Path]::GetFileNameWithoutExtension($mkvInfo.Path)
+        '$n' = [string]$mkvInfo.Title
+        }
       
-    $patternVars.GetEnumerator() | ForEach-Object {$outFile=$pattern} { 
-        $outFile = $outFile -replace [regex]::escape($_.Key), $_.Value
-    }
+        $patternVars.GetEnumerator() | ForEach-Object {$outFile=$pattern} { 
+            $outFile = $outFile -replace [regex]::escape($_.Key), $_.Value
+        }
 
-    if($type -eq "xml" -or $type -eq "simple")
-    {
-        $outFile = "$(Join-Path $outDir $outFile).$(if($type -eq "simple"){"txt"} else {"xml"})"
-        Write-HostEx "Extracting $type chapters into `'$outFile`'" -ForegroundColor Gray -If (!$quiet)
-        $out = &mkvextract --ui-language en chapters $mkvInfo.Path $(if($type -eq "simple") { "--simple" })            if ($out[0] -match "terminate called after throwing an instance")        {            Write-HostEx "Error: mkvextract terminated in an unusual way. Make sure the input file exists and is readable." -ForegroundColor Red -If (!$quiet)            $err = $true        }        elseif ($out[0] -match '\<\?xml version="[0-9].[0-9]"\?\>')        {            ([xml]$out).Save($outFile)        }        elseif ($out[0] -match 'CHAPTER[0-9]+=')        {             [string[]]$out = $out | ?{$_.Trim()}             Set-Content -LiteralPath $outFile -Encoding UTF8 $out        }        elseif($out.Trim())        { Write-HostEx $_ -ForegroundColor Gray -If (!$quiet) }        Write-HostEx "Done.`n" -ForegroundColor Green -If (!$quiet -and !$err)        } else {           Write-HostEx "Error: unsupported chapter type `"$type`"." -ForegroundColor Red -If (!$quiet)    }
+        if($_ -eq "xml" -or $_ -eq "simple")
+        {
+            $outFile = "$(Join-Path $outDir $outFile).$(if($_ -eq "simple"){"txt"} else {"xml"})"
+            Write-HostEx "Extracting $_ chapters into `'$outFile`'" -ForegroundColor Gray -If (!$quiet)
+            $out = &mkvextract --ui-language en chapters $mkvInfo.Path $(if($_ -eq "simple") { "--simple" })                if ($out[0] -match "terminate called after throwing an instance")            {                Write-HostEx "Error: mkvextract terminated in an unusual way. Make sure the input file exists and is readable." -ForegroundColor Red -If (!$quiet)                $err = $true            }            elseif ($out[0] -match '\<\?xml version="[0-9].[0-9]"\?\>')            {                ([xml]$out).Save($outFile)            }            elseif ($out[0] -match 'CHAPTER[0-9]+=')            {                    [string[]]$out = $out | ?{$_.Trim()}                    Set-Content -LiteralPath $outFile -Encoding UTF8 $out            }            elseif($out.Trim())            { Write-HostEx $_ -ForegroundColor Gray -If (!$quiet) }            Write-HostEx "Done.`n" -ForegroundColor Green -If (!$quiet -and !$err)            } elseif ($_ -ne "none") {               Write-HostEx "Error: unsupported chapter type `"$_`"." -ForegroundColor Red -If (!$quiet)        }    }
     return $mkvInfo
 }
 
