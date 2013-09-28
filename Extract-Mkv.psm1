@@ -39,6 +39,9 @@ param
 [Parameter(Mandatory=$false, HelpMessage='Suppress status output.')]
 [alias("q")]
 [switch]$Quiet = $false,
+[Parameter(Mandatory=$false, HelpMessage='Recurse directories.')]
+[alias("r")]
+[switch]$Recurse = $false,
 [Parameter(Mandatory=$false, HelpMessage='Also try to extract the CUE sheet from the chapter information and tags for tracks.')]
 [switch]$Cuesheet = $false,
 [Parameter(Mandatory=$false, HelpMessage='Extract track data to a raw file.')]
@@ -50,7 +53,7 @@ param
 
     #CheckMissingCommands -commands "mkvinfo.exe"
    
-    try { $mkvs = Get-Files $inputs -match '.mk[v|a|s]$' -matchDesc Matroska -acceptFolders }
+    try { $mkvs = Get-Files $inputs -match '.mk[v|a|s]$' -matchDesc Matroska -acceptFolders -recurse:$Recurse }
     catch
     {
         if($_.Exception.WasThrownFromThrowStatement -eq $true)

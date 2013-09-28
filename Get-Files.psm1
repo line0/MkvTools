@@ -9,19 +9,29 @@ param
 [Parameter(Mandatory=$false)] [string]$match = ".*",
 [Parameter(Mandatory=$false)] [string]$matchDesc = "",
 [Parameter(Mandatory=$false)] [switch]$acceptFiles = $true,
-[Parameter(Mandatory=$false)] [switch]$acceptFolders = $false
+[Parameter(Mandatory=$false)] [switch]$acceptFolders,
+[Parameter(Mandatory=$false)] [switch]$recurse
 )
 
-$inFilesAll = @()
+    $inFilesAll = @()
     foreach ($input in $inputs)
     {
+        if ((Test-Path $input -PathType Container) -and !$acceptFolders)
+        {
+            throw "Error: input must not be a directory."
+        }
+        elseif ((Test-Path $input -PathType Leaf) -and !$acceptFiles)
+        {
+            throw "Error: input must be a directory."
+        }
+
         # Workaround for Get-Childitem bug
         if(!($input -match '`')) 
         { $inputEsc = [System.Management.Automation.WildcardPattern]::Escape($input) } else { $inputEsc = $input }
         
         try 
         { 
-            $inFiles = Get-ChildItem -LiteralPath ([System.Management.Automation.WildcardPattern]::Unescape($inputEsc)) -ErrorAction Stop `
+            $inFiles = Get-ChildItem -Recurse:$recurse -LiteralPath ([System.Management.Automation.WildcardPattern]::Unescape($inputEsc)) -ErrorAction Stop `
                      | ?{ $_ -match $match }
         }
         catch
