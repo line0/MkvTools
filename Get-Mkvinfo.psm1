@@ -224,41 +224,43 @@ filter Format-MkvInfoTable([string[]]$tables=@("video","audio","subtitles","atta
                     return $retValDefault
                 } 
             }    
-    
-    $tblCommon=@(
-    @{label="EX"; Expression={ $color.Highlight($_._toExtract,"X") }; Width=2; Order=0},
-    @{label="ID"; Expression={ $_.ID }; Width=2; Order=1},
-    @{label="Track Name"; Expression={ $_.Name }; Width=35; Order=2 },
-    @{label="Lang"; Expression={ $_.Language }; Width=4; Order=3},
-    @{label="Flags"; Expression={ if($_.Enabled){"Enabled"}; if($_.Forced){"Forced"}; if($_.Default){"Default"} }; Width=18; Order=99}
-    )
-    
-    $tblVideo=@(
-    @{label="Codec"; Expression={ if($_.FourCCName) {"$($_.FourCCName) (VfW)"} else {"$($_.CodecName)$(if($_.Profile){", $($_.Profile)"})"} }; Width=30; Order=4 },
-    @{label="Resolution"; Expression={"$($_.pResX)x$($_.pResY)$(if($_.Interlaced) {"i"} else {"p"})$($_.Framerate)"}; Width=18; Order=5}
-    )
-
-    $tblAudio=@(
-    @{label="Codec"; Expression={ if($_.FormatTag) {"$($_.CodecName) (ACM)"} else {"$($_.CodecName)"} }; Width=20; Order=4 },
-    @{label="SRate"; Expression={"$([float]$_.SampleRate/1000) kHz"}; Width=10; Order=5},
-    @{label="Chan"; Expression={$_.ChannelCount}; Width=4; Order=6},
-    @{label="Depth"; Expression={if($_.BitDepth){"$($_.BitDepth)bit"}}; Width=6; Order=7}
-    )
-
-    $tblSubs=@(
-    @{label="Codec"; Expression={ $_.CodecName }; Width=20; Order=4 }
-    )
-
-    $tblAtt=@(
-    @{label="EX"; Expression={ $color.Highlight($_._toExtract,"X") }; Width=2; Order=0},
-    @{label="UID"; Expression={ $_.UID }; Width=20; Order=1 },
-    @{label="Mime Type"; Expression={$_.MimeType}; Width=30; Order=2},
-    @{label="Name"; Expression={$_.Name}; Width=40; Order=3}
-    )
 
     $mkvInfo = $_
 
     $tables | %{
+
+        # Keep these inside the loop to avoid having to clone all the hashtables to not permanently lose the order key
+        $tblCommon=@(
+        @{label="EX"; Expression={ $color.Highlight(($_._ExtractStateTrack -eq 1),"X") }; Width=2; Order=0},
+        @{label="ID"; Expression={ $_.ID }; Width=2; Order=1},
+        @{label="Track Name"; Expression={ $_.Name }; Width=35; Order=2 },
+        @{label="Lang"; Expression={ $_.Language }; Width=4; Order=3},
+        @{label="Flags"; Expression={ if($_.Enabled){"Enabled"}; if($_.Forced){"Forced"}; if($_.Default){"Default"} }; Width=18; Order=99}
+        )
+    
+        $tblVideo=@(
+        @{label="Codec"; Expression={ if($_.FourCCName) {"$($_.FourCCName) (VfW)"} else {"$($_.CodecName)$(if($_.Profile){", $($_.Profile)"})"} }; Width=30; Order=4 },
+        @{label="Resolution"; Expression={"$($_.pResX)x$($_.pResY)$(if($_.Interlaced) {"i"} else {"p"})$($_.Framerate)"}; Width=18; Order=5}
+        )
+
+        $tblAudio=@(
+        @{label="Codec"; Expression={ if($_.FormatTag) {"$($_.CodecName) (ACM)"} else {"$($_.CodecName)"} }; Width=20; Order=4 },
+        @{label="SRate"; Expression={"$([float]$_.SampleRate/1000) kHz"}; Width=10; Order=5},
+        @{label="Chan"; Expression={$_.ChannelCount}; Width=4; Order=6},
+        @{label="Depth"; Expression={if($_.BitDepth){"$($_.BitDepth)bit"}}; Width=6; Order=7}
+        )
+
+        $tblSubs=@(
+        @{label="Codec"; Expression={ $_.CodecName }; Width=20; Order=4 }
+        )
+
+        $tblAtt=@(
+        @{label="EX"; Expression={ $color.Highlight(($_._ExtractState -eq 1),"X") }; Width=2; Order=0},
+        @{label="UID"; Expression={ $_.UID }; Width=20; Order=1 },
+        @{label="Mime Type"; Expression={$_.MimeType}; Width=30; Order=2},
+        @{label="Name"; Expression={$_.Name}; Width=40; Order=3}
+        )
+
         $tblHeader = switch ($_) { 
             "video"       { "Video tracks" }
             "audio"       { "Audio tracks" }
