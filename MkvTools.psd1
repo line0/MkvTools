@@ -7,8 +7,8 @@ Description = 'A small set of PowerShell modules that enable batch processing of
 
 PowerShellVersion = '3.0'
 
-NestedModules = @('Extract-Mkv.psm1', 'Get-Files.psm1', 'Get-Mkvinfo.psm1', 'Write-HostEx.psm1')
-FunctionsToExport = @('Extract-Mkv','Format-MkvInfoTable', 'Get-MkvInfo', 'Get-Files', 'Write-HostEx')
+NestedModules = @('Check-CmdInPath.psm1', 'Extract-Mkv.psm1', 'Format-MkvInfoTable.psm1', 'Get-Files.psm1', 'Get-Mkvinfo.psm1', 'Write-HostEx.psm1')
+FunctionsToExport = @('Check-CmdInPath', 'Extract-Mkv', 'Format-MkvInfoTable', 'Get-MkvInfo', 'Get-Files', 'Write-HostEx')
 CmdletsToExport = ''
 VariablesToExport = '*'
 AliasesToExport = '*'

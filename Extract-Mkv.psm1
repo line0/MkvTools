@@ -1,64 +1,184 @@
-﻿function Extract-Mkv
+﻿<#
+.SYNOPSIS
+Extract-Mkv batch extracts tracks, attachments, chapters and timecodes from Matroska files using the mkvtoolnix command line tools.
+
+.DESCRIPTION
+
+Extract-Mkv accepts a comma-delimited list of input files and/or folders (recursing supported) 
+and by default extracts all tracks from each input file using a configurable naming pattern.
+It also allows you to specify which track types or track IDs to extract and lets you choose 
+a custom output directory if you don't want it to extract into the parent directory of the input files.
+
+Extract-Mkv can extract tracks, attachments, chapters and timecodes in one go, will indicate progress 
+using status bars where possible and returns track/attachment tables that highlight what is being extracted. 
+
+The Module acts as a wrapper for the mkvtoolnix command line tools and therefore requires 
+your PATH environment variable to point to mkvextract.exe and mkvinfo.exe
+
+.EXAMPLE
+
+Extract-Mkv X:\Videos, Y:\Test.mkv
+
+Extracts all tracks from Y:\Test.mkv aswell as all .mkv/.mka/.mks files found in X:\Videos into the parent folders
+of the respective input files using the default naming pattern (e.g. Y:\Test_1.h264)
+
+.EXAMPLE
+
+Extract-Mkv X:\Videos -r -t subtitles,1 -a fonts -c xml -o X:\Videos\Extracted
+
+Extracts from Matroska files found in X:\Videos and subdirectories: 
+    all subtitle tracks
+    all tracks with Track ID 1
+    all attached fonts
+    xml chapters for each file
+into X:\Videos\Extracted using the default naming pattern 
+    
+.EXAMPLE
+Extract-Mkv X:\Videos -ReturnMkvInfo | Tee-Object -Variable mkvInfo | Format-MkvInfoTable
+Simultaneously outputs Get-MkvInfo objects info $mkvInfo for further processing 
+and track/attachment tables to the console
+
+.LINK
+https://github.com/line0/MkvTools
+
+#>
+#requires -version 3
+
+function Extract-Mkv
 {
 [CmdletBinding()]
 param
 (
-[Parameter(Position=0, Mandatory=$true, HelpMessage='Files or Directories to process (comma-delimited). Can take mixed.')]
+[Parameter(Position=0, Mandatory=$true, HelpMessage='Comma-delimited list of files and/or Directories to process (can take mixed).')]
 [alias("i")]
 [string[]]$Inputs,
-[Parameter(Mandatory=$false, HelpMessage='Extract tracks. Possible values: none, all (Default), video, audio, subtitles, [Track IDs]')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Comma-delimited list of tracks to extract.
+    Track types: none, all, video, audio, subtitles
+    Track IDs: 0, 1, 2, 3...
+Defaults to: all
+'@)]
 [alias("t")]
 [string[]]$Tracks = @("all"),
-[Parameter(Mandatory=$false, HelpMessage='Extract attachments. Possible values: none (Default), all, fonts')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Comma-delimited list of attachments to extract.
+    Attachment types: none (Default), all, fonts
+'@)]
 [alias("a")]
 [string[]]$Attachments = @(),
-[Parameter(Mandatory=$false, HelpMessage='Extract chapters. Possible values: none (Default), xml, simple')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Comma-delimited list of chapter types to extract.
+    Output modes: none, xml, simple
+Defaults to: none
+'@)]
 [alias("c")]
 [string[]]$Chapters = @(),
-[Parameter(Mandatory=$false, HelpMessage='Extract v2 timecodes. Possible values: none, all (Default), video, audio, subtitles, [Track IDs]')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Comma-delimited list of tracks to extract v2 timecodes from.
+    Track types: none, all, video, audio, subtitles
+    Track IDs: 0, 1, 2, 3...
+'@)]
 [alias("tc")]
 [string[]]$Timecodes,
-[Parameter(Mandatory=$false, HelpMessage='Filename pattern for extracted tracks.')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Filename pattern for extracted tracks, not including file extension. File names are relative to the output directory, which defaults to the parent directories of the input files.
+Available variables:
+    $f : Input filename, without path and extension
+    $i : Track ID
+    $t : Track Type (audio, video, subtitles)
+    $n : Track Name (if present)
+    $l : Track Language (if present)
+Defaults to: $f_$i
+'@)]
 [alias("tp")]
 [string]$TrackPattern = '$f_$i',
-[Parameter(Mandatory=$false, HelpMessage='Filename pattern for extracted attachments.')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Filename pattern for extracted attachments, not including file extension. File names are relative to the output directory, which defaults to the parent directories of the input files.
+Available variables:
+    $f : Input filename, without path and extension
+    $i : Attachment UID
+    $n : Attachment filename (as stored in the matroska file) without path and extension
+Defaults to: $f_Attachments\$n
+'@)]
 [alias("ap")]
 [string]$AttachmentPattern = '$f_Attachments\$n',
-[Parameter(Mandatory=$false, HelpMessage='Filename pattern for extracted chapters.')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Filename pattern for extracted chapters, not including file extension. File names are relative to the output directory, which defaults to the parent directories of the input files.
+Available variables:
+    $f : Input filename, without path and extension
+    $n : File Title (if present)
+Defaults to: $f_Chapters
+'@)]
 [alias("cp")]
 [string]$ChapterPattern = '$f_Chapters',
-[Parameter(Mandatory=$false, HelpMessage='Filename pattern for extracted timecodes.')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Filename pattern for extracted timecodes, not including file extension. File names are relative to the output directory, which defaults to the parent directories of the input files.
+Available variables:
+    $f : Input filename, without path and extension
+    $i : Track ID
+    $t : Track Type (audio, video, subtitles)
+    $n : Track Name (if present)
+    $l : Track Language (if present)
+    $v : Timecode Type (currently only v2 available)
+Defaults to: $f_$i_Timecodes_$v
+'@)]
 [alias("tcp")]
 [string]$TimecodePattern = '$f_$i_Timecodes_$v',
-[Parameter(Mandatory=$false, HelpMessage='Output directory. Defaults to parent directory of the inputs')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Output directory for extracted track, attachments, chapters and timecodes.
+Defaults to the parent directories of the input files.
+'@)]
 [alias("o")]
 [string]$OutDir,
-[Parameter(Mandatory=$false, HelpMessage="Verbosity level: `n 0: Don't display tables`n 1: Default`n 2: Show additonal mkvextract output`n 3: Pass --verbose to mkvextract")]
+[Parameter(Mandatory=$false, HelpMessage=@"
+Verbosity level of console output:
+    0: Display general extraction status, but don't return track and attachment tables
+    1: Also display (and return) tables
+    2: Display additional mkvextract output
+    3: Pass --verbose to mkvextract (generates lots of output)
+Default: 1
+"@)]
 [alias("v")]
 [int]$Verbosity=1,
-[Parameter(Mandatory=$false, HelpMessage='Parse the whole file instead of relying on the index.')]
+[Parameter(Mandatory=$false, HelpMessage='Parse the whole file instead of relying on the index (pass to mkvextract).')]
 [alias("f")]
 [switch]$ParseFully = $false,
-[Parameter(Mandatory=$false, HelpMessage='Suppress status output.')]
+[Parameter(Mandatory=$false, HelpMessage="Suppress all console output and don't return anything.")]
 [alias("q")]
 [switch]$Quiet = $false,
-[Parameter(Mandatory=$false, HelpMessage='Recurse directories.')]
+[Parameter(Mandatory=$false, HelpMessage='Recurse subdirectories.')]
 [alias("r")]
 [switch]$Recurse = $false,
-[Parameter(Mandatory=$false, HelpMessage='Also try to extract the CUE sheet from the chapter information and tags for tracks.')]
+[Parameter(Mandatory=$false, HelpMessage='Also try to extract the CUE sheet from the chapter information and tags for tracks (pass to mkvextract).')]
 [switch]$Cuesheet = $false,
-[Parameter(Mandatory=$false, HelpMessage='Extract track data to a raw file.')]
+[Parameter(Mandatory=$false, HelpMessage='Extract track data to a raw file (pass to mkvextract).')]
 [switch]$Raw = $false,
-[Parameter(Mandatory=$false, HelpMessage='Extract track data to a raw file including the CodecPrivate as a header.')]
+[Parameter(Mandatory=$false, HelpMessage='Extract track data to a raw file including the CodecPrivate as a header (pass to mkvextract).')]
 [switch]$FullRaw = $false,
-[Parameter(Mandatory=$false, HelpMessage='Return Get-MkvInfo objects for further processing (instead of a table object).')]
+[Parameter(Mandatory=$false, HelpMessage=@'
+Return objects generated by Get-MkvInfo instead of table objects. Use this if you need additional information about the source files as well as extracted assets for further processing.
+Extract-Mkv adds the following properties to the Get-MkvInfo objects:
+    [Tracks] _ExtractStateTrack: Extraction state of the track:
+                                 0 or not present: track is not marked for extraction
+                                 1: track is marked for extraction
+                                 2: track has been successfully extracted
+                                -1: track extraction failed
+             _ExtractPathTrack: Full path to the extracted track
+             _ExtractStateTimecodes: Extraction state of the track timecodes
+             _ExtractPathTimecodes Full path to the extracted timecodes
+    
+    [Attachments] _ExtractState: Extraction state of the attachment
+                  _ExtractPath: Full path to the extracted attachment
+
+'@)]
 [switch]$ReturnMkvInfo = $false
 )
 
     if ($Quiet) { $Verbosity=-1 }
     elseif($Verbosity -eq 3) { $VerbosePreference = "Continue" }
 
-    #CheckMissingCommands -commands "mkvinfo.exe"
+    Check-CmdInPath mkvinfo.exe -Name mkvtoolnix
+    Check-CmdInPath mkvextract.exe -Name mkvtoolnix
    
     try { $mkvs = Get-Files $inputs -match '.mk[v|a|s]$' -matchDesc Matroska -acceptFolders -recurse:$Recurse }
     catch

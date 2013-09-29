@@ -1,21 +1,38 @@
-﻿#requires -version 3
+﻿<#
 
-function AddNoteProperties([object]$InputObject, $Properties)
-{
-    $Properties | ?{ $_.Value }| %{
-        $type = if($_.Type) { $_.Type } else { [type]"string" }
-        $val = if($_.RepFrom -and $_.RepTo) {$_.Value -replace $_.RepFrom,$_.RepTo} else {$_.Value}
-        if($_.Type -eq [type]"bool") {$val = [int]$val} # Convert "0" -> $false
-        $val = $val -as $type
-        Add-Member -InputObject $InputObject -NotePropertyName $_.Name  -NotePropertyValue $val             
-    }
-    return $InputObject
-}
+.SYNOPSIS
+Get-MkvInfo runs mkvinfo to get information about the contents of a Matroska file and formats it into an object for further processing.
+
+.DESCRIPTION
+
+Get-MkvInfo takes a Matroska (*.mkv, *.mka, *.mks) as an input and returns a custom object containing
+general information about the file as well as a list of tracks and a list of attachments.
+The returned object also exposes a number of Methods to filter the track and attachment lists.
+
+Get-MkvInfo uses CodecId.xml and FourCC.xml to provide user friendly video/audio/subtitle codec information.
+
+The Module acts as a wrapper for the mkvtoolnix command line tools and therefore requires 
+your PATH environment variable to point to mkvinfo.exe
+
+.EXAMPLE
+Get-MkvInfo X:\Video.mkv
+
+.NOTES
+Segment linking is not supported at this time.
+
+.LINK
+https://github.com/line0/MkvTools
+
+#>
+#requires -version 3
 
 function Get-Mkvinfo
 {
 [CmdletBinding()]
 param([Parameter(Position=0, Mandatory=$true)] [string]$file)
+    
+    Check-CmdInPath mkvinfo.exe -Name mkvtoolnix
+
     try { $file = Get-Files $file -match '.mk[v|a|s]$' -matchDesc Matroska }
     catch
     {
@@ -204,88 +221,16 @@ param([Parameter(Position=0, Mandatory=$true)] [string]$file)
     return $segmentInfo
 }
 
-filter Format-MkvInfoTable([string[]]$tables=@("video","audio","subtitles","attachments"))
+function AddNoteProperties([object]$InputObject, $Properties)
 {
-    $color = [PSCustomObject]@{
-        ForegroundDefault = $Host.UI.RawUI.ForegroundColor
-        BackgroundDefault = $Host.UI.RawUI.BackgroundColor
-        ForegroundHighlight = [ConsoleColor]"Yellow"
-        BackgroundHighlight = $Host.UI.RawUI.BackgroundColor
-    } | Add-Member -MemberType ScriptMethod -Name Highlight -PassThru -Value `
-            {   
-                param([bool]$enable=$true,[string]$retValHighlight,[string]$retValDefault) 
-                if ($enable) {
-                    $Host.UI.RawUI.ForegroundColor=$this.ForegroundHighlight 
-                    $Host.UI.RawUI.BackgroundColor=$this.BackgroundHighlight
-                    return $retValHighlight
-                } else { 
-                    $Host.UI.RawUI.ForegroundColor=$this.ForegroundDefault
-                    $Host.UI.RawUI.BackgroundColor=$this.BackgroundDefault
-                    return $retValDefault
-                } 
-            }    
-
-    $mkvInfo = $_
-
-    $tables | %{
-
-        # Keep these inside the loop to avoid having to clone all the hashtables to not permanently lose the order key
-        $tblCommon=@(
-        @{label="EX"; Expression={ $color.Highlight(($_._ExtractStateTrack -eq 1),"X") }; Width=2; Order=0},
-        @{label="ID"; Expression={ $_.ID }; Width=2; Order=1},
-        @{label="Track Name"; Expression={ $_.Name }; Width=35; Order=2 },
-        @{label="Lang"; Expression={ $_.Language }; Width=4; Order=3},
-        @{label="Flags"; Expression={ if($_.Enabled){"Enabled"}; if($_.Forced){"Forced"}; if($_.Default){"Default"} }; Width=18; Order=99}
-        )
-    
-        $tblVideo=@(
-        @{label="Codec"; Expression={ if($_.FourCCName) {"$($_.FourCCName) (VfW)"} else {"$($_.CodecName)$(if($_.Profile){", $($_.Profile)"})"} }; Width=30; Order=4 },
-        @{label="Resolution"; Expression={"$($_.pResX)x$($_.pResY)$(if($_.Interlaced) {"i"} else {"p"})$($_.Framerate)"}; Width=18; Order=5}
-        )
-
-        $tblAudio=@(
-        @{label="Codec"; Expression={ if($_.FormatTag) {"$($_.CodecName) (ACM)"} else {"$($_.CodecName)"} }; Width=20; Order=4 },
-        @{label="SRate"; Expression={"$([float]$_.SampleRate/1000) kHz"}; Width=10; Order=5},
-        @{label="Chan"; Expression={$_.ChannelCount}; Width=4; Order=6},
-        @{label="Depth"; Expression={if($_.BitDepth){"$($_.BitDepth)bit"}}; Width=6; Order=7}
-        )
-
-        $tblSubs=@(
-        @{label="Codec"; Expression={ $_.CodecName }; Width=20; Order=4 }
-        )
-
-        $tblAtt=@(
-        @{label="EX"; Expression={ $color.Highlight(($_._ExtractState -eq 1),"X") }; Width=2; Order=0},
-        @{label="UID"; Expression={ $_.UID }; Width=20; Order=1 },
-        @{label="Mime Type"; Expression={$_.MimeType}; Width=30; Order=2},
-        @{label="Name"; Expression={$_.Name}; Width=40; Order=3}
-        )
-
-        $tblHeader = switch ($_) { 
-            "video"       { "Video tracks" }
-            "audio"       { "Audio tracks" }
-            "subtitles"   { "Subtitle tracks" }
-            "attachments" { "Attachments" }
-            }
-        Write-Host $tblHeader -NoNewline -ForegroundColor DarkBlue -BackgroundColor DarkGray
-
-        $tbl = switch ($_) {
-            "video" {$tblCommon + $tblVideo}
-            "audio" {$tblCommon + $tblAudio}
-            "subtitles" {$tblCommon + $tblSubs}
-            "attachments" {$tblAtt}
-            }
-
-        $tbl = $tbl | Sort-Object -Property @{Expression={$_.Order}}
-        $tbl | %{$_.Remove("Order")}  # because Format-Table doesn't accept extra keys
-    
-        if($_ -eq "attachments") { $mkvInfo.Attachments | Format-Table -Property $tbl }
-        else {$mkvInfo.GetTracksByType($_) | Format-Table -Property $tbl }
-
-        $color.Highlight($false)
+    $Properties | ?{ $_.Value }| %{
+        $type = if($_.Type) { $_.Type } else { [type]"string" }
+        $val = if($_.RepFrom -and $_.RepTo) {$_.Value -replace $_.RepFrom,$_.RepTo} else {$_.Value}
+        if($_.Type -eq [type]"bool") {$val = [int]$val} # Convert "0" -> $false
+        $val = $val -as $type
+        Add-Member -InputObject $InputObject -NotePropertyName $_.Name  -NotePropertyValue $val             
     }
+    return $InputObject
 }
 
-
 Export-ModuleMember Get-Mkvinfo
-Export-ModuleMember Format-MkvInfoTable
