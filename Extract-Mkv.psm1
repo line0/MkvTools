@@ -94,16 +94,9 @@ param
         
         if($Verbosity -ge 1)
         {
-            $tables = @{ video     = "Video tracks"
-                         audio     = "Audio tracks"
-                         subtitles = "Subtitle tracks"
-                         attachments = "Attachments"
-                       }
-            $tables.GetEnumerator() | %{
-               Write-Host $_.Value -NoNewline -ForegroundColor DarkBlue -BackgroundColor DarkGray
-               $mkvInfo | Format-MkvInfo-Table -type $_.Key
-            }
+            $mkvInfo | Format-MkvInfoTable
         }
+     
         
         $cmnFlags = @{ "vb" = $Verbosity
                        "verbose" = ($Verbosity -ge 3)
@@ -181,9 +174,9 @@ function ExtractAttachments([PSCustomObject]$mkvInfo, [string]$pattern, [string]
         Write-HostEx "Extracting $extCnt attachments..." -If ($flags.vb -ge 0)
         &mkvextract --ui-language en attachments $mkvInfo.Path $extArgs `        ($flags.GetEnumerator()| ?{$_.Value -eq $true -and $_.Key -ne "vb"} | %{"--$($_.Key)"}) `        | Tee-Object -Variable dbgLog | %{ $doneCnt=0 } {            if($_ -match "^The attachment (#[0-9]+), ID (?:-)?([0-9]+), MIME type (.*?), size ([0-9]+), is written to '(.*?) '\.$")            {                $doneCnt++                $extPercent = ($doneCnt / $extCnt) * 100                Write-Progress -Activity "   $($mkvInfo.Path | Split-Path -Leaf)" -Status "Extracting $extCnt attachments..." -PercentComplete $extPercent -CurrentOperation ($matches[5] | Split-Path -Leaf) -Id 1 -ParentId 0                $mkvInfo.Attachments = $mkvInfo.Attachments | ?{$_.UID -eq [uint64]$matches[2]}| Select-Object * -ExcludeProperty _toExtract                Write-HostEx "$($matches[1]): $($matches[5])" -If ($flags.vb -ge 2) -ForegroundColor Gray            }            elseif($_ -match 'Error: .*')            {                Write-HostEx $matches[0] -ForegroundColor Red -If ($flags.vb -ge 0)                $mkvInfo.Tracks = $mkvInfo.Tracks | Select-Object * -ExcludeProperty _ExtractPath                $err = $true            }            elseif($_ -match '^\(mkvextract\)')            {                Write-Verbose $_            }            elseif($_.Trim())            { Write-HostEx $_ -ForegroundColor Gray -If ($flags.vb -ge 0) }         }
 
-        Write-HostEx "Done.`n" -ForegroundColor Green -If ($flags.vb -ge 2 -and !$err)
+        Write-HostEx "Done.`n" -ForegroundColor Green -If ($flags.vb -ge 0 -and !$err)
 
-    } else { Write-HostEx "No attachments to extract" -ForegroundColor Gray -If ($flags.vb -ge -1) }
+    } else { Write-HostEx "No attachments to extract" -ForegroundColor Gray -If ($flags.vb -ge 2) }
     return $mkvInfo
 }
 

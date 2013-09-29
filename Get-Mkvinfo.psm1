@@ -204,7 +204,7 @@ param([Parameter(Position=0, Mandatory=$true)] [string]$file)
     return $segmentInfo
 }
 
-filter Format-MkvInfo-Table([string]$type="video")
+filter Format-MkvInfoTable([string[]]$tables=@("video","audio","subtitles","attachments"))
 {
     $color = [PSCustomObject]@{
         ForegroundDefault = $Host.UI.RawUI.ForegroundColor
@@ -225,7 +225,7 @@ filter Format-MkvInfo-Table([string]$type="video")
                 } 
             }    
     
-    $tbl=@(
+    $tblCommon=@(
     @{label="EX"; Expression={ $color.Highlight($_._toExtract,"X") }; Width=2; Order=0},
     @{label="ID"; Expression={ $_.ID }; Width=2; Order=1},
     @{label="Track Name"; Expression={ $_.Name }; Width=35; Order=2 },
@@ -256,22 +256,34 @@ filter Format-MkvInfo-Table([string]$type="video")
     @{label="Name"; Expression={$_.Name}; Width=40; Order=3}
     )
 
-    $tbl = switch ($type) {
-        "video" {$tbl + $tblVideo}
-        "audio" {$tbl + $tblAudio}
-        "subtitles" {$tbl + $tblSubs}
-        "attachments" {$tblAtt}
-        }
+    $mkvInfo = $_
 
-    $tbl = $tbl | Sort-Object -Property @{Expression={$_.Order}}
-    $tbl | %{$_.Remove("Order")}  # because Format-Table doesn't accept extra keys
+    $tables | %{
+        $tblHeader = switch ($_) { 
+            "video"       { "Video tracks" }
+            "audio"       { "Audio tracks" }
+            "subtitles"   { "Subtitle tracks" }
+            "attachments" { "Attachments" }
+            }
+        Write-Host $tblHeader -NoNewline -ForegroundColor DarkBlue -BackgroundColor DarkGray
+
+        $tbl = switch ($_) {
+            "video" {$tblCommon + $tblVideo}
+            "audio" {$tblCommon + $tblAudio}
+            "subtitles" {$tblCommon + $tblSubs}
+            "attachments" {$tblAtt}
+            }
+
+        $tbl = $tbl | Sort-Object -Property @{Expression={$_.Order}}
+        $tbl | %{$_.Remove("Order")}  # because Format-Table doesn't accept extra keys
     
-    if($type -eq "attachments") { $_.Attachments | Format-Table -Property $tbl }
-    else {$_.GetTracksByType($type) | Format-Table -Property $tbl }
+        if($_ -eq "attachments") { $mkvInfo.Attachments | Format-Table -Property $tbl }
+        else {$mkvInfo.GetTracksByType($_) | Format-Table -Property $tbl }
 
-    $color.Highlight($false)
+        $color.Highlight($false)
+    }
 }
 
 
 Export-ModuleMember Get-Mkvinfo
-Export-ModuleMember Format-MkvInfo-Table
+Export-ModuleMember Format-MkvInfoTable
