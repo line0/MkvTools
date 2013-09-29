@@ -47,7 +47,9 @@ param
 [Parameter(Mandatory=$false, HelpMessage='Extract track data to a raw file.')]
 [switch]$Raw = $false,
 [Parameter(Mandatory=$false, HelpMessage='Extract track data to a raw file including the CodecPrivate as a header.')]
-[switch]$FullRaw = $false
+[switch]$FullRaw = $false,
+[Parameter(Mandatory=$false, HelpMessage='Return Get-MkvInfo objects for further processing (instead of a table object).')]
+[switch]$ReturnMkvInfo = $false
 )
 
     if ($Quiet) { $Verbosity=-1 }
@@ -92,7 +94,8 @@ param
 
         Write-Verbose "(Tracks marked yellow will be extracted)`n"
         
-        if($Verbosity -ge 1)
+        if ($ReturnMkvInfo) { $mkvInfo } # stream MkvInfo objects
+        elseif($Verbosity -ge 1)
         {
             $mkvInfo | Format-MkvInfoTable
         }
@@ -110,11 +113,11 @@ param
         $mkvInfo = ExtractTracks -MkvInfo $mkvInfo -Pattern $trackPattern -OutDir $OutDir -flags $trackFlags
         $mkvInfo = ExtractAttachments -MkvInfo $mkvInfo -pattern $attachmentPattern -OutDir $OutDir -flags $cmnFlags
         $mkvInfo = ExtractChapters -MkvInfo $mkvInfo -Pattern $ChapterPattern -OutDir $OutDir -vb $Verbosity -types $Chapters
-        
+
         $doneCnt++
         Write-Progress -Activity $activityMsg -Id 0 -PercentComplete (100*$doneCnt/$mkvs.Count) -Status "File $($doneCnt+1)/$($mkvs.Count)"
     }
-     Write-Progress -Activity $activityMsg -Id 0 -Completed 
+     Write-Progress -Activity $activityMsg -Id 0 -Completed
 }
 
 function ExtractTracks([PSCustomObject]$mkvInfo, [string]$pattern, [string]$outDir, [hashtable]$flags)
