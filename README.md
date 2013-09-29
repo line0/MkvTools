@@ -1,10 +1,24 @@
 MkvTools
 ========
 
-A small set of PowerShell modules that enable batch processing of Matroska files with mkvtoolnix. Requires at least Powershell 3.0 and mkvtoolnix 6.3.0
+A small set of PowerShell modules that enable batch processing of Matroska files with  MKVToolNix.
 
 _Note: Segment linking is not supported at this time._
 
+Requirements
+============
+
+MkvTools requires PowerShell 3 and the following software to be available from your PATH environment variable:
+
+* [MKVToolNix](http://www.bunkus.org/videotools/mkvtoolnix/) v6.3.0+
+
+Installation
+============
+
+Unpack the MkvTools archive into: _%userprofile%\Documents\WindowsPowerShell\Modules_.
+
+Usage
+=====
 
 Extract-Mkv
 -----------
