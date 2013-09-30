@@ -200,16 +200,35 @@ Extract-Mkv adds the following properties to the Get-MkvInfo objects:
     foreach($mkv in $mkvs)
     {
         $mkvInfo = Get-MkvInfo -file $mkv.FullName
-        $tracks | ?{($_ -eq "all")} | %{$mkvInfo.tracks | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force}
-        $tracks | ?{($_ -match '[0-9]+')} | %{$mkvInfo.GetTracksByID($_)} | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
-        $tracks | ?{($_ -match 'subtitles|audio|video')} | %{$mkvInfo.GetTracksByType($_)} | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
-
-        $Timecodes | ?{($_ -eq "all")} | %{$mkvInfo.tracks | Add-Member -NotePropertyName _ExtractStateTimecodes -NotePropertyValue $true -Force}
-        $Timecodes | ?{($_ -match '[0-9]+')} | %{$mkvInfo.GetTracksByID($_)} | Add-Member -NotePropertyName _ExtractStateTimecodes -NotePropertyValue 1 -Force
-        $Timecodes | ?{($_ -match 'subtitles|audio|video')} | %{$mkvInfo.GetTracksByType($_)} | Add-Member -NotePropertyName _ExtractStateTimecodes -NotePropertyValue 1 -Force
         
-        $attachments | ?{($_ -eq "all")} | %{$mkvInfo.Attachments | Add-Member -NotePropertyName _ExtractState -NotePropertyValue 1 -Force}
-        $attachments | ?{($_ -eq "fonts")} | %{$mkvInfo.GetAttachmentsByExtension("ttf|ttc|otf|fon") | Add-Member -NotePropertyName _ExtractState -NotePropertyValue 1 -Force}
+        if ($Tracks -contains "all")
+        {
+            $mkvInfo.tracks | ?{$_} | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
+            # There might be a file without tracks, who knows
+        }
+        else
+        {
+            $Tracks | ?{($_ -match '[0-9]+')} | %{$mkvInfo.GetTracksByID($_)} | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
+            $Tracks | ?{($_ -match 'subtitles|audio|video')} | %{$mkvInfo.GetTracksByType($_)} | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
+
+        }
+
+        if ($Timecodes -contains "all")
+        { $mkvInfo.tracks| ?{$_} | Add-Member -NotePropertyName _ExtractStateTimecodes -NotePropertyValue 1 -Force }
+        else
+        {
+            $Timecodes | ?{($_ -match '[0-9]+')} | %{$mkvInfo.GetTracksByID($_) | Add-Member -NotePropertyName _ExtractStateTimecodes -NotePropertyValue 1 -Force }
+            $Timecodes | ?{($_ -match 'subtitles|audio|video')} | %{$mkvInfo.GetTracksByType($_) | Add-Member -NotePropertyName _ExtractStateTimecodes -NotePropertyValue 1 -Force }
+        }
+
+
+        if ($Attachments -contains "all")
+        { 
+            $mkvInfo.Attachments | ?{$_} | Add-Member -NotePropertyName _ExtractState -NotePropertyValue 1 -Force
+        }
+        else
+        {             $Attachments | ?{($_ -eq "fonts")} | %{$mkvInfo.GetAttachmentsByExtension("ttf|ttc|otf|fon")`                         | Add-Member -NotePropertyName _ExtractState -NotePropertyValue 1 -Force }
+        }
  
         Write-HostEx "$($mkv.Name)" -ForegroundColor White -NoNewline:($Verbosity -ge 1) -If ($Verbosity -ge 0)
 
