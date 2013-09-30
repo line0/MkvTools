@@ -16,11 +16,14 @@ param
     $inFilesAll = @()
     foreach ($input in $inputs)
     {
-        if ((Test-Path $input -PathType Container) -and !$acceptFolders)
+        $isDirectory = Test-Path -LiteralPath $input -PathType Container
+        $isFile = Test-Path -LiteralPath $input -PathType Leaf
+
+        if ($isDirectory -and !$acceptFolders)
         {
             throw "Error: input must not be a directory."
         }
-        elseif ((Test-Path $input -PathType Leaf) -and !$acceptFiles)
+        elseif ($isFile -and !$acceptFiles)
         {
             throw "Error: input must be a directory."
         }
@@ -31,7 +34,7 @@ param
         
         try 
         { 
-            $inFiles = Get-ChildItem -Recurse:$recurse -LiteralPath ([System.Management.Automation.WildcardPattern]::Unescape($inputEsc)) -ErrorAction Stop `
+            $inFiles = Get-ChildItem -Recurse:($recurse -and $isDirectory) -LiteralPath ([System.Management.Automation.WildcardPattern]::Unescape($inputEsc)) -ErrorAction Stop `
                      | ?{ $_ -match $match }
         }
         catch
