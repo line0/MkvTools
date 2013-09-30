@@ -398,7 +398,7 @@
     </codec>
 
     <codec>
-        <id>S_TEXT/UTF-8</id>
+        <id>S_TEXT/UTF8</id>
         <name>SRT</name>
         <desc>SubRip Text (UTF-8)</desc>
         <ext>srt</ext>
@@ -422,7 +422,7 @@
         <id>S_VOBSUB</id>
         <name>VobSub</name>
         <desc>VobSub DVD Image subtitles</desc>
-        <ext>bmp</ext>
+        <ext>sub</ext>
     </codec>
 
     <codec>
