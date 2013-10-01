@@ -11,8 +11,11 @@ and will stream formatted tables as the objects are coming in.
 
 Setting _ExtractStateTracks (tracks) or _ExtractState (attachments) to [int]1 will set the EX flag
 which highlights the row of the flagged track.
-Type "Get-Help Extract-Mkv -full" and refer to the -ReturnMkvInfo parameter for more information on extraction flags.
+Type "Get-Help Extract-Mkv -detailed" and refer to the -ReturnMkvInfo parameter for more information on extraction flags.
 
+.PARAMETER Tables
+Comma-delimited list of tables to display.
+Available Tables: video, audio, subtitles, attachments
 .EXAMPLE
 
 Get-MkvInfo X:\Video.mkv | Format-MkvInfoTable

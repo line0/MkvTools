@@ -36,7 +36,7 @@ The Module acts as a wrapper for the mkvtoolnix command line tools and therefore
 For examples and information on command line parameters, run:
 
 ```PowerShell
-Get-Help Extract-Mkv -full
+Get-Help Extract-Mkv -detailed
 ```
 
 Get-MkvInfo
@@ -68,5 +68,5 @@ Type "Get-Help Extract-Mkv -full" and refer to the -ReturnMkvInfo parameter for 
 For examples and information on command line parameters, run:
 
 ```PowerShell
-Get-Help Format-MkvInfoTable -full
+Get-Help Format-MkvInfoTable -detailed
 ```
