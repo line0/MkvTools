@@ -22,6 +22,7 @@ Comma-delimited list of files and/or Directories to process (can take mixed).
 Comma-delimited list of tracks to extract.
     Track types: none, all, video, audio, subtitles
     Track IDs: 0, 1, 2, 3...
+    Tracks by Properties: @{prop1=value; prop2=[regex]"^val(ue)?"}
 Defaults to: all
 Alias: -t
 
@@ -153,6 +154,14 @@ Extracts from Matroska files found in X:\Videos and subdirectories:
     all attached fonts
     xml chapters for each file
 into X:\Videos\Extracted using the default naming pattern 
+
+.EXAMPLE
+
+Extract-Mkv X:\Videos\file.mkv -Tracks subtitles,@{CodecName=[regex]"^(FLAC|AAC)$";Language=jpn}
+
+Extracts from X:\Videos\file.mkv
+    all subtitle tracks
+    all Japanese FLAC and AAC tracks
     
 .EXAMPLE
 Extract-Mkv X:\Videos -ReturnMkvInfo | Tee-Object -Variable mkvInfo | Format-MkvInfoTable
@@ -175,7 +184,7 @@ param
 [string[]]$Inputs,
 [Parameter(Mandatory=$false, HelpMessage='Comma-delimited list of tracks to extract.')]
 [alias("t")]
-[string[]]$Tracks = @("all"),
+[array]$Tracks = @("all"),
 [Parameter(Mandatory=$false, HelpMessage='Comma-delimited list of attachments to extract.')]
 [alias("a")]
 [string[]]$Attachments = @(),
@@ -256,9 +265,14 @@ param
         }
         else
         {
-            $Tracks | ?{($_ -match '[0-9]+')} | %{$mkvInfo.GetTracksByID($_)} | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
-            $Tracks | ?{($_ -match 'subtitles|audio|video')} | %{$mkvInfo.GetTracksByType($_)} | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
-
+            $tracksToExtract = @()
+            foreach ($track in $Tracks)
+            {
+                if ($track.GetType().Name -eq [type]"Hashtable") {$tracksToExtract += $mkvInfo.GetTracksByProperties($track)}
+                elseif ($track -match '^[0-9]+$') { $tracksToExtract += $mkvInfo.GetTracksByID($track) }
+                elseif ($track -match '^(?:subtitles|audio|video)$') {$tracksToExtract += $mkvInfo.GetTracksByType($track)}
+            }
+            $tracksToExtract | Add-Member -NotePropertyName _ExtractStateTrack -NotePropertyValue 1 -Force
         }
 
         if ($Timecodes -contains "all")

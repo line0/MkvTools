@@ -209,6 +209,19 @@ param([Parameter(Position=0, Mandatory=$true)] [string]$file)
     } -Name GetTracksById -PassThru
 
     $segmentInfo = $segmentInfo | Add-Member -MemberType ScriptMethod -Value `
+    { param([Parameter(Mandatory=$true)][hashtable]$props) 
+
+    $props.GetEnumerator() | %{$tracksSel=$this.Tracks}{
+        $key=$_.Key
+        $val=$_.Value
+        if ($val.GetType().Name -eq [type]"Regex") { $tracksSel = $tracksSel | ?{$_.$key -match $val} }
+        else { $tracksSel = $tracksSel | ?{$_.$key -eq $val} }
+    }
+    return $tracksSel
+
+    } -Name GetTracksByProperties -PassThru
+
+    $segmentInfo = $segmentInfo | Add-Member -MemberType ScriptMethod -Value `
     { param([Parameter(Mandatory=$true)][string]$ext) 
         return $this.Attachments | ?{ $_.Name -match ".($ext)`$"}
     } -Name GetAttachmentsByExtension -PassThru
