@@ -426,6 +426,13 @@
     </codec>
 
     <codec>
+        <id>S_HDMV/PGS</id>
+        <name>PGS</name>
+        <desc>Presentation Graphic Stream Subtitle Format</desc>
+        <ext>pgs</ext>
+    </codec>
+
+    <codec>
         <id>S_KATE</id>
         <name>Kate</name>
         <desc>Karaoke And Text Encapsulation</desc>
