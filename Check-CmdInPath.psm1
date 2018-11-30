@@ -9,7 +9,7 @@ param
 
     if(!(Get-Command $Cmd -ErrorAction SilentlyContinue))
     {
-        Write-Host "Fatal Error: missing $Cmd. Make sure $Name inst installed and in your PATH environment variable" -ForegroundColor Red
+        Write-Host "Fatal Error: missing $Cmd. Make sure $Name is installed and in your PATH environment variable" -ForegroundColor Red
         break
     }
 
