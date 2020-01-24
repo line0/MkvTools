@@ -51,7 +51,7 @@ param([Parameter(Position=0, Mandatory=$true)] [string]$file)
     foreach ($line in $mkvInfo)
     {
         #Remove somes sizes and lengths from the nodes
-        $line = $line -replace '^([| ]*\+ )(.*?)(?:,? \(?(?:size|length):? [0-9]+\)?)(?: \((.*?)\))?','$1$2$3'
+        $line = $line -replace '^([| ]*\+ )(.*?)(?:[,:]? \(?(?:size|length):? [0-9]+\)?)(?: \((.*?)\))?','$1$2$3'
         $regex = '^([| ]*)\+ (.*?)(?:\: (.*?))?(?:$)'
         $matches = select-string -InputObject $line -pattern $regex  | Select -ExpandProperty Matches
          
@@ -104,11 +104,11 @@ param([Parameter(Position=0, Mandatory=$true)] [string]$file)
     }
 
     $segments = $mkvInfoFilt | ?{ $_[2] -eq "Segment"} | %{$_[3]}
-    $tracks = $segments.("Segment tracks")[0]["A track"]
+    $tracks = if ($segments.("Segment tracks")) { $segments.("Segment tracks")[0]["A track"] } else { $segments.("Tracks")[0]["Track"] }
 
     $segmentInfo = [PSCustomObject]@{
         UID = [byte[]]$(,@($segments.("Segment information").("Segment UID")[0] -split "\s" | %{[byte]$_}))
-        Duration = [TimeSpan]($segments.("Segment information").("Duration")[0] -creplace ".*?s \(([0-9]*:[0-9]{2}:[0-9]{2}.[0-9]{3})\)","`$1")
+        Duration = [TimeSpan]($segments.("Segment information").("Duration")[0] -creplace "(?:.*?s \()?([0-9]*:[0-9]{2}:[0-9]{2}.[0-9]{3,7})[0-9]*\)?","`$1")
         TrackCount = $tracks.Length
         Path = $file
     }
@@ -143,9 +143,9 @@ param([Parameter(Position=0, Mandatory=$true)] [string]$file)
                         @{Name="Language";  Value=$track.("Language")},
                         @{Name="CodecExt";  Value=$codecInfo.ext},
                         @{Name="Enabled";   Value=$track.("Enabled"); Type=[type]"bool"},
-                        @{Name="Forced";    Value=$track.("Forced flag"); Type=[type]"bool"},
+                        @{Name="Forced";    Value=if ($track.("Forced flag")) { $track.("Forced flag") } else { $track.("Forced track flag") } ; Type=[type]"bool"},
                         @{Name="Lacing";    Value=$track.("Lacing flag"); Type=[type]"bool"}
-                        @{Name="Default";   Value=$track.("Default flag"); Type=[type]"bool"}
+                        @{Name="Default";   Value=if ($track.("Default flag")) { $track.("Default flag") } else { $track.("Default track flag") }; Type=[type]"bool"}
                       )
 
         if($trackType -eq "video")
@@ -156,7 +156,7 @@ param([Parameter(Position=0, Mandatory=$true)] [string]$file)
                     @{Name="pResX";       Value=$track.("Video track").("Pixel width"); Type=[type]"int"},
                     @{Name="pResY";       Value=$track.("Video track").("Pixel height"); Type=[type]"int"},
                     @{Name="Interlaced";  Value=$track.("Video track").("Interlaced"); Type=[type]"bool"},
-                    @{Name="Framerate";   Value=$track.("Default duration"); RepFrom='[0-9]*.[0-9]*ms \(([0-9]*.[0-9]*) frames.*?\)'; RepTo='$1'; Type=[type]"float"},
+                    @{Name="Framerate";   Value=$track.("Default duration"); RepFrom='(?:[0-9]*.[0-9]*ms|(?:[0-9]{2}:)*[0-9]{2}.[0-9]*) \(([0-9]*.[0-9]*) frames.*?\)'; RepTo='$1'; Type=[type]"float"},
                     @{Name="FourCC";      Value=$fourCC.code},
                     @{Name="FourCCName";  Value=$fourCC.name},
                     @{Name="FourCCDesc";  Value=$fourCC.desc},
